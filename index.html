@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The PM's Field Guide to Claude</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --cream: #ede9e0;
+    --amber: #d4820a;
+    --amber-light: #f5a623;
+    --amber-pale: #fdf3e0;
+    --teal: #1a6b6b;
+    --teal-light: #2d9696;
+    --red: #c0392b;
+    --muted: #6b6760;
+    --rule: #d4cfc5;
+    --code-bg: #1a1a24;
+    --code-text: #e8e4dc;
+    --code-accent: #f5a623;
+    --highlight: #fff8e6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--amber), var(--teal-light));
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(245,243,238,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    z-index: 999;
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .nav-logo span { color: var(--amber); }
+  .nav-links {
+    display: flex; gap: 1.5rem; list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    background: var(--ink); color: var(--amber) !important;
+    padding: 0.3rem 0.75rem; border-radius: 20px;
+    text-decoration: none; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-pill:hover { background: var(--amber) !important; color: white !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 2rem 4rem;
+    max-width: 900px; margin: 0 auto;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--amber);
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: inline-block;
+    width: 24px; height: 2px; background: var(--amber);
+  }
+  h1.hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+  h1.hero-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 580px;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+  .hero-meta {
+    display: flex; gap: 2rem; align-items: center;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    font-size: 0.75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .hero-meta-item strong {
+    display: block; font-size: 0.9rem;
+    color: var(--ink); font-weight: 700;
+    text-transform: none; letter-spacing: 0;
+    margin-top: 0.1rem;
+  }
+  .hero-decoration {
+    position: absolute; right: -2rem; top: 30%;
+    font-size: 14rem; opacity: 0.04;
+    font-family: 'DM Serif Display', serif;
+    pointer-events: none; user-select: none;
+    line-height: 1;
+  }
+
+  /* ── SCROLL INDICATOR ── */
+  .scroll-hint {
+    margin-top: 3rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted);
+    animation: fadeUp 1s ease 0.5s both;
+  }
+  .scroll-arrow {
+    width: 32px; height: 32px;
+    border: 1.5px solid var(--rule);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION WRAPPER ── */
+  .section {
+    max-width: 860px; margin: 0 auto;
+    padding: 5rem 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .section-label {
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--amber);
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+  h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    color: var(--ink);
+  }
+  p { margin-bottom: 1rem; color: #3d3a35; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── CHAPTER GRID ── */
+  .chapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .chapter-card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    position: relative;
+    overflow: hidden;
+  }
+  .chapter-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--rule);
+    transition: background 0.2s;
+  }
+  .chapter-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+  .chapter-card:hover::before { background: var(--amber); }
+  .chapter-num {
+    font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted); margin-bottom: 0.5rem;
+  }
+  .chapter-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .chapter-card p {
+    font-size: 0.82rem; color: var(--muted);
+    line-height: 1.5; margin: 0;
+  }
+
+  /* ── THE PM SHIFT SECTION ── */
+  .shift-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-top: 2rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .shift-col {
+    padding: 2rem;
+  }
+  .shift-col:first-child {
+    background: var(--cream);
+    border-right: 1px solid var(--rule);
+  }
+  .shift-col:last-child {
+    background: var(--ink);
+    color: white;
+  }
+  .shift-col h3 {
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 1.25rem;
+  }
+  .shift-col:first-child h3 { color: var(--muted); }
+  .shift-col:last-child h3 { color: var(--amber); }
+  .shift-item {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+  }
+  .shift-col:last-child .shift-item { color: #d4cfc5; }
+  .shift-icon {
+    width: 20px; height: 20px; flex-shrink: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700;
+    margin-top: 0.15rem;
+  }
+  .shift-col:first-child .shift-icon { background: var(--rule); color: var(--muted); }
+  .shift-col:last-child .shift-icon { background: var(--amber); color: var(--ink); }
+
+  /* ── THE LOOP ── */
+  .loop-container {
+    margin-top: 2.5rem;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .loop-step {
+    background: white;
+    padding: 2rem 1.75rem;
+    position: relative;
+  }
+  .loop-step-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 4rem; line-height: 1;
+    color: var(--rule);
+    position: absolute; top: 1.25rem; right: 1.5rem;
+  }
+  .loop-step-label {
+    font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--amber); margin-bottom: 0.4rem;
+  }
+  .loop-step h3 {
+    font-size: 1.25rem; margin-bottom: 0.6rem;
+  }
+  .loop-step p {
+    font-size: 0.83rem; color: var(--muted);
+    line-height: 1.55;
+  }
+  .loop-step.active { background: var(--ink); }
+  .loop-step.active h3 { color: white; }
+  .loop-step.active p { color: #9b9590; }
+  .loop-step.active .loop-step-num { color: #2a2a35; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 1.75rem 0;
+    font-family: 'DM Mono', monospace;
+  }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.7rem 1.25rem;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .code-label {
+    font-size: 0.65rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: #6b6760;
+  }
+  .copy-btn {
+    font-size: 0.65rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--amber); background: none; border: none;
+    cursor: pointer; padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(212,130,10,0.3);
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: rgba(212,130,10,0.1); }
+  .code-body {
+    padding: 1.25rem 1.5rem;
+    color: var(--code-text);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .code-body .prompt-label {
+    color: #6b6760; font-weight: 500;
+  }
+  .code-body .prompt-key { color: var(--code-accent); }
+  .code-body .prompt-val { color: #a8e6cf; }
+  .code-body .prompt-comment { color: #5a5560; font-style: italic; }
+  .code-body .prompt-bracket { color: #e8c99a; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 3px solid;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 4px 4px 0;
+    margin: 1.75rem 0;
+  }
+  .callout-tip {
+    border-color: var(--teal-light);
+    background: #f0fafa;
+  }
+  .callout-warn {
+    border-color: var(--amber);
+    background: var(--amber-pale);
+  }
+  .callout-insight {
+    border-color: #9b59b6;
+    background: #faf5ff;
+  }
+  .callout-label {
+    font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .callout-tip .callout-label { color: var(--teal); }
+  .callout-warn .callout-label { color: #8b5a00; }
+  .callout-insight .callout-label { color: #6c3483; }
+  .callout p { font-size: 0.88rem; color: #3d3a35; margin: 0; }
+
+  /* ── PROMPT TEMPLATES ── */
+  .prompt-grid {
+    display: grid; gap: 1.25rem;
+    margin-top: 1.75rem;
+  }
+  .prompt-card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .prompt-card-header {
+    padding: 1rem 1.5rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .prompt-card-title {
+    font-size: 0.8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .prompt-tag {
+    font-size: 0.62rem; font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .tag-strategy { background: #fff3cd; color: #856404; }
+  .tag-research { background: #d1ecf1; color: #0c5460; }
+  .tag-metrics { background: #d4edda; color: #155724; }
+  .tag-writing { background: #e2d9f3; color: #432874; }
+  .tag-decisions { background: #fde8e8; color: #7b1111; }
+  .prompt-card-body {
+    padding: 1.25rem 1.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: #3d3a35;
+    background: #fafaf7;
+  }
+  .placeholder {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  /* ── STRATEGY DOC ANATOMY ── */
+  .anatomy-grid {
+    display: grid; gap: 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 2rem;
+  }
+  .anatomy-row {
+    display: grid; grid-template-columns: 180px 1fr;
+    border-bottom: 1px solid var(--rule);
+  }
+  .anatomy-row:last-child { border-bottom: none; }
+  .anatomy-label {
+    padding: 1.25rem 1.5rem;
+    background: var(--cream);
+    border-right: 1px solid var(--rule);
+    font-size: 0.78rem; font-weight: 700;
+    color: var(--ink);
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .anatomy-label .tag {
+    font-size: 0.6rem; color: var(--amber);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .anatomy-content {
+    padding: 1.25rem 1.5rem;
+    font-size: 0.85rem; color: #3d3a35;
+    line-height: 1.6;
+  }
+  .anatomy-content strong { color: var(--ink); }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    list-style: none;
+    margin: 1.25rem 0;
+  }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.88rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; color: var(--teal);
+    font-weight: 700;
+    transition: all 0.15s;
+    margin-top: 0.1rem;
+  }
+  .check-box:hover { border-color: var(--teal-light); }
+  .check-box.checked {
+    background: var(--teal-light);
+    border-color: var(--teal-light);
+    color: white;
+  }
+  .checklist li.done { opacity: 0.5; }
+  .checklist li.done span { text-decoration: line-through; }
+
+  /* ── PULSE ANATOMY ── */
+  .pulse-card {
+    background: var(--ink);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 2rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .pulse-header {
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pulse-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--amber);
+  }
+  .pulse-date { font-size: 0.7rem; color: #5a5560; }
+  .pulse-section {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .pulse-section:last-child { border-bottom: none; }
+  .pulse-section-label {
+    font-size: 0.6rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5a5560; margin-bottom: 0.75rem;
+  }
+  .pulse-line {
+    font-size: 0.82rem; color: var(--code-text);
+    line-height: 1.8;
+  }
+  .pulse-up { color: #5ec47a; }
+  .pulse-down { color: #e87a6a; }
+  .pulse-flag { color: var(--amber); }
+  .pulse-neutral { color: #9b9590; }
+
+  /* ── TABS ── */
+  .tabs {
+    margin-top: 2rem;
+  }
+  .tab-list {
+    display: flex; gap: 0;
+    border-bottom: 2px solid var(--rule);
+    margin-bottom: 0;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 0.75rem 1.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    background: none; border: none;
+    cursor: pointer; color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--amber);
+  }
+  .tab-panel { display: none; padding: 2rem 0; }
+  .tab-panel.active { display: block; }
+
+  /* ── FAQ ── */
+  .faq-item {
+    border-bottom: 1px solid var(--rule);
+  }
+  .faq-q {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.1rem 0;
+    cursor: pointer;
+    font-weight: 600; font-size: 0.92rem;
+    gap: 1rem;
+  }
+  .faq-toggle {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--muted);
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+  .faq-q.open .faq-toggle {
+    background: var(--amber);
+    color: white;
+    transform: rotate(45deg);
+  }
+  .faq-a {
+    display: none;
+    padding: 0 0 1.25rem;
+    font-size: 0.88rem; color: #3d3a35;
+    line-height: 1.65;
+  }
+  .faq-a.open { display: block; }
+
+  /* ── CTA ── */
+  .cta-band {
+    background: var(--ink);
+    padding: 4rem 2rem;
+    margin-top: 2rem;
+  }
+  .cta-inner {
+    max-width: 680px; margin: 0 auto;
+    text-align: center;
+  }
+  .cta-inner h2 {
+    font-family: 'DM Serif Display', serif;
+    color: white; margin-bottom: 1rem;
+  }
+  .cta-inner p {
+    color: #9b9590; margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--amber);
+    color: var(--ink); font-weight: 700;
+    font-size: 0.82rem; text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.9rem 2rem;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .cta-btn:hover { background: var(--amber-light); transform: translateY(-1px); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    max-width: 860px; margin: 0 auto;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .shift-grid { grid-template-columns: 1fr; }
+    .loop-container { grid-template-columns: 1fr; }
+    .anatomy-row { grid-template-columns: 1fr; }
+    .anatomy-label { border-right: none; border-bottom: 1px solid var(--rule); }
+    .nav-links { display: none; }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav>
+  <a href="#" class="nav-logo">PM × <span>Claude</span></a>
+  <ul class="nav-links">
+    <li><a href="#shift">The Shift</a></li>
+    <li><a href="#loop">The Loop</a></li>
+    <li><a href="#strategy">Strategy</a></li>
+    <li><a href="#prompts">Prompts</a></li>
+    <li><a href="#pulse">Pulse</a></li>
+    <li><a href="#mindblown">Mind-Blowers</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="pm-claude-code-guide.html" class="nav-pill">⚡ Claude Code Guide</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-decoration">PM</div>
+  <div class="hero-eyebrow">Field Guide · 2025 Edition</div>
+  <h1 class="hero-title">
+    The Product Manager's<br>
+    Guide to <em>Working with</em><br>Claude
+  </h1>
+  <p class="hero-subtitle">
+    AI has eliminated the drudgery of product management. What's left is the good stuff: strategy, clarity, user insight, and judgment. Here's how to use Claude to do it better.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">Audience<strong>Product Managers</strong></div>
+    <div class="hero-meta-item">Level<strong>Beginner → Advanced</strong></div>
+    <div class="hero-meta-item">Time to Read<strong>~15 minutes</strong></div>
+    <div class="hero-meta-item">Based on<strong>Marcus Moretti's Compound Engineering Guide</strong></div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow">↓</div>
+    Start reading
+  </div>
+</section>
+
+<!-- CHAPTERS -->
+<section class="section fade-in">
+  <div class="section-label">What's Inside</div>
+  <h2>Seven chapters. One new workflow.</h2>
+  <p>This guide takes you from understanding the mindset shift to writing your first prompts, building a product strategy, and running a weekly product pulse. Skip to whatever's most useful right now.</p>
+
+  <div class="chapter-grid">
+    <a href="#shift" class="chapter-card">
+      <div class="chapter-num">Chapter 01</div>
+      <h3>The PM Shift</h3>
+      <p>Why everything just changed, and what it means for how you spend your time.</p>
+    </a>
+    <a href="#loop" class="chapter-card">
+      <div class="chapter-num">Chapter 02</div>
+      <h3>The PM Loop</h3>
+      <p>Plan → Ship → Review. How Claude fits into each stage of the cycle.</p>
+    </a>
+    <a href="#strategy" class="chapter-card">
+      <div class="chapter-num">Chapter 03</div>
+      <h3>The Strategy Doc</h3>
+      <p>How to use Claude to write (and keep updating) a strategy that actually guides decisions.</p>
+    </a>
+    <a href="#prompts" class="chapter-card">
+      <div class="chapter-num">Chapter 04</div>
+      <h3>Prompt Templates</h3>
+      <p>Copy-paste prompts for your most common PM tasks. Customize and go.</p>
+    </a>
+    <a href="#pulse" class="chapter-card">
+      <div class="chapter-num">Chapter 05</div>
+      <h3>The Product Pulse</h3>
+      <p>Your daily AI-generated snapshot of how the product is actually performing.</p>
+    </a>
+    <a href="#mindblown" class="chapter-card" style="border-color: var(--amber); background: var(--amber-pale);">
+      <div class="chapter-num" style="color: var(--amber);">Chapter 06 ✦</div>
+      <h3>Mind-Blowing Prompts</h3>
+      <p>Five advanced prompts that show what Claude can really do. Dynamic, role-specific, token-efficient.</p>
+    </a>
+    <a href="#faq" class="chapter-card">
+      <div class="chapter-num">Chapter 07</div>
+      <h3>Common Questions</h3>
+      <p>Real questions PMs ask when starting with Claude. Honest answers.</p>
+    </a>
+  </div>
+</section>
+
+<!-- THE PM SHIFT -->
+<section id="shift" class="section fade-in">
+  <div class="section-label">Chapter 01</div>
+  <h2>The PM Shift</h2>
+  <p>Product management used to be about managing the coordination overhead of a complex discipline. Research, analytics, writing specs, tracking status, synthesizing feedback — all of it necessary, most of it not the interesting part of the job.</p>
+  <p>LLMs changed the calculus. What used to take hours now takes minutes. The interesting parts — judgment, vision, user empathy, strategic clarity — are now the whole job.</p>
+
+  <div class="shift-grid">
+    <div class="shift-col">
+      <h3>Before Claude</h3>
+      <div class="shift-item">
+        <div class="shift-icon">✕</div>
+        <div>Spending 3 hours on an analytics investigation, fighting with SQL</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✕</div>
+        <div>Writing detailed tickets with acceptance criteria, over and over</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✕</div>
+        <div>Manually synthesizing user research into a coherent narrative</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✕</div>
+        <div>Drafting PRDs from scratch that still feel like templates</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✕</div>
+        <div>Context-switching across 100+ SaaS tools to find the story</div>
+      </div>
+    </div>
+    <div class="shift-col">
+      <h3>With Claude</h3>
+      <div class="shift-item">
+        <div class="shift-icon">✓</div>
+        <div>Back-and-forth conversation that surfaces insights in minutes</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✓</div>
+        <div>Talking about features and letting Claude write the tickets</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✓</div>
+        <div>Pasting raw feedback and getting structured themes instantly</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✓</div>
+        <div>Iterating on strategy documents in a guided conversation</div>
+      </div>
+      <div class="shift-item">
+        <div class="shift-icon">✓</div>
+        <div>One daily pulse that synthesizes everything into a single view</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">Key insight</div>
+    <p>As Marcus Moretti writes: "Software development has shifted from 20% planning and 80% execution to 80% planning and 20% execution." Your job as a PM is more critical than ever — but the nature of the work has changed. <strong>The conversation is the work.</strong></p>
+  </div>
+
+  <h3 style="margin-top: 2rem;">The new PM superpower: Asking better questions</h3>
+  <p>Claude doesn't remove judgment from product management. It amplifies it. The PM who asks clearer questions, gives more context, and knows what "good" looks like will get dramatically better results than the PM who treats Claude like a search engine.</p>
+  <p>The rest of this guide is about building that skill.</p>
+</section>
+
+<!-- THE PM LOOP -->
+<section id="loop" class="section fade-in">
+  <div class="section-label">Chapter 02</div>
+  <h2>The PM Loop</h2>
+  <p>The core rhythm of product work hasn't changed. What's changed is what Claude does at each stage — and what you're freed up to focus on.</p>
+
+  <div class="loop-container">
+    <div class="loop-step">
+      <div class="loop-step-num">01</div>
+      <div class="loop-step-label">Plan</div>
+      <h3>Strategy & Features</h3>
+      <p>Claude helps you develop and maintain your strategy doc, run ideation sessions, prioritize work, and write specs. You make the calls.</p>
+    </div>
+    <div class="loop-step active">
+      <div class="loop-step-num">02</div>
+      <div class="loop-step-label">Ship</div>
+      <h3>Build & Deploy</h3>
+      <p>Claude helps engineers move faster. You stay focused on what's launching and why — making sure each feature is true to the strategy.</p>
+    </div>
+    <div class="loop-step">
+      <div class="loop-step-num">03</div>
+      <div class="loop-step-label">Review</div>
+      <h3>Learn & Adapt</h3>
+      <p>Claude generates your product pulse, flags anomalies, and asks the follow-up questions. You decide what it means and what to do next.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">How it loops</div>
+    <p>Everything that ships is an experiment. Learnings from the Review stage feed back into the Strategy stage. Over time, Claude has more context about your product, your users, and what's working — and its help gets sharper. <strong>Start simple. Build context. Let it compound.</strong></p>
+  </div>
+
+  <h3 style="margin-top: 2rem;">A practical starting point</h3>
+  <p>If you're new to working with Claude, start at <strong>Plan</strong>. Open a new conversation and paste in this starter prompt:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">Starter Prompt · Copy & Customize</span>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="code-body">I'm a product manager at <span class="placeholder">[company]</span>. We build <span class="placeholder">[what the product does]</span> for <span class="placeholder">[who uses it]</span>.
+
+I want to use this conversation to help me think more clearly about our product strategy. 
+
+To start: ask me a series of questions (one at a time) to help me define:
+1. The core problem we're solving
+2. Who specifically has that problem
+3. How we're uniquely positioned to solve it
+4. How we know if it's working
+
+Push back if my answers are vague. I want this to be genuinely useful, not just validating.</div>
+  </div>
+</section>
+
+<!-- STRATEGY DOC -->
+<section id="strategy" class="section fade-in">
+  <div class="section-label">Chapter 03</div>
+  <h2>The Strategy Document</h2>
+  <p>The strategy document is the foundation of everything else. It's not a roadmap or a PRD — it's the "why and how" that every feature decision points back to. When it's good, it makes prioritization obvious. When it's missing or vague, everything is a debate.</p>
+  <p>Based on Richard Rumelt's <em>Good Strategy Bad Strategy</em>, a solid product strategy has five components. Here's what each one actually means in practice.</p>
+
+  <div class="anatomy-grid">
+    <div class="anatomy-row">
+      <div class="anatomy-label"><span class="tag">Section 1</span>Target Problem</div>
+      <div class="anatomy-content">
+        <strong>The recurring, expensive pain your users feel today.</strong><br>
+        Not a feature gap. Not a market opportunity. A lived experience of frustration or friction. If you read it to someone with the problem, they should nod and say "yes, exactly." Generic: "teams waste time." Specific: "engineering managers spend 4+ hours a week chasing status updates across three tools."
+      </div>
+    </div>
+    <div class="anatomy-row">
+      <div class="anatomy-label"><span class="tag">Section 2</span>Approach</div>
+      <div class="anatomy-content">
+        <strong>Your specific angle on solving it.</strong><br>
+        1–2 sentences describing the guiding policy. This is NOT a goal ("be the best") or a feature ("we have AI"). It's the strategic bet. If you read it to someone with the problem, they should be intrigued and ask "how?" — not shrug.
+      </div>
+    </div>
+    <div class="anatomy-row">
+      <div class="anatomy-label"><span class="tag">Section 3</span>Who It's For</div>
+      <div class="anatomy-content">
+        <strong>The specific personas who feel this problem.</strong><br>
+        Start narrow. One primary persona is better than four vague ones. Include role, company stage, and what they currently do instead of using your product. The more specific, the better your product decisions will be.
+      </div>
+    </div>
+    <div class="anatomy-row">
+      <div class="anatomy-label"><span class="tag">Section 4</span>Key Metrics</div>
+      <div class="anatomy-content">
+        <strong>3–5 S.M.A.R.T. metrics that undeniably show value.</strong><br>
+        Track people and dollars at minimum. Avoid page views and vanity metrics. Good example: "exports completed" (someone got value). Bad example: "sessions" (someone showed up). Each metric should be something where, if it goes up, you're confident the product is working.
+      </div>
+    </div>
+    <div class="anatomy-row">
+      <div class="anatomy-label"><span class="tag">Section 5</span>Tracks</div>
+      <div class="anatomy-content">
+        <strong>2–4 multi-month capability initiatives.</strong><br>
+        Not features. Capabilities. "Integrations" is a track. "Slack integration" is a feature. Each track should be significant enough that completing it moves your key metrics. More than 4 tracks usually means lack of focus — which this section is designed to prevent.
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 2.5rem;">Writing your strategy with Claude</h3>
+  <p>Writing strategy cold is hard. The best way is to get interviewed. Use this prompt to start a guided strategy session:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">Strategy Interview Prompt</span>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="code-body">I want to write a product strategy document for <span class="placeholder">[product name]</span>.
+
+Please interview me to build it. Go section by section:
+1. Target Problem
+2. Our Approach  
+3. Who It's For (primary persona first)
+4. Key Metrics (3-5 SMART metrics)
+5. Work Tracks (2-4 major capability areas)
+
+Rules for the interview:
+— Ask one question at a time
+— If my answer is vague, push back with a more specific question
+— If I describe a feature instead of a problem/approach, redirect me
+— After each section, summarize what you've captured before moving on
+— At the end, write the complete strategy.md document
+
+Start with: "What problem does <span class="placeholder">[product name]</span> solve, and for whom specifically?"</div>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Common mistake</div>
+    <p>PMs often describe features in the "Approach" section instead of the strategic logic. If your approach sounds like "we use AI to help teams X," that's a feature description. Your approach should explain the mechanism — <em>why</em> that's the right way to solve the problem. Ask Claude to challenge you on this explicitly.</p>
+  </div>
+
+  <h3>Keeping it alive</h3>
+  <p>The strategy document is a living thing. Re-run the interview every few months, especially after you've shipped significant features and have new data. The conversation will be sharper because Claude will have more context about what you've learned. Paste in your current strategy.md and recent pulse reports and ask Claude where the strategy should evolve.</p>
+</section>
+
+<!-- PROMPT TEMPLATES -->
+<section id="prompts" class="section fade-in">
+  <div class="section-label">Chapter 04</div>
+  <h2>Prompt Templates for PMs</h2>
+  <p>These are ready-to-use prompts for your most common tasks. Each one is designed to give Claude enough context to be genuinely useful — not generic. Customize the <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:0.9em;">highlighted fields</span> before using.</p>
+
+  <div class="tabs">
+    <div class="tab-list">
+      <button class="tab-btn active" onclick="switchTab(this, 'tab-strategy')">Strategy</button>
+      <button class="tab-btn" onclick="switchTab(this, 'tab-research')">User Research</button>
+      <button class="tab-btn" onclick="switchTab(this, 'tab-metrics')">Metrics</button>
+      <button class="tab-btn" onclick="switchTab(this, 'tab-writing')">Writing</button>
+      <button class="tab-btn" onclick="switchTab(this, 'tab-decisions')">Decisions</button>
+    </div>
+
+    <div id="tab-strategy" class="tab-panel active">
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Prioritization Help</div>
+            <span class="prompt-tag tag-strategy">Strategy</span>
+          </div>
+          <div class="prompt-card-body">Here are the features on our backlog right now:
+<span class="placeholder">[paste your list]</span>
+
+Our strategy is focused on <span class="placeholder">[1–2 sentence strategy summary]</span>.
+Our primary metric is <span class="placeholder">[key metric]</span>.
+
+Help me think through prioritization. For each item, ask me:
+— Do we have evidence users actually want this?
+— Does it directly move our primary metric?
+— What's the estimated effort?
+
+Then suggest a priority order with your reasoning. Push back on anything that seems like scope creep.</div>
+        </div>
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Feature Spec Writer</div>
+            <span class="prompt-tag tag-strategy">Strategy</span>
+          </div>
+          <div class="prompt-card-body">Write a feature spec for: <span class="placeholder">[feature name]</span>
+
+Context:
+— User problem: <span class="placeholder">[what user pain this solves]</span>
+— Our approach: <span class="placeholder">[how we're solving it]</span>
+— Success looks like: <span class="placeholder">[metric or observable behavior]</span>
+— Out of scope: <span class="placeholder">[what we're NOT doing]</span>
+
+Format: Problem statement, Proposed solution, Acceptance criteria (Given/When/Then), Open questions.
+
+Keep it concise. If something is ambiguous, flag it rather than assuming.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-research" class="tab-panel">
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Synthesize User Feedback</div>
+            <span class="prompt-tag tag-research">Research</span>
+          </div>
+          <div class="prompt-card-body">Here is raw user feedback from the past <span class="placeholder">[time period]</span>:
+
+<span class="placeholder">[paste feedback — emails, support tickets, survey responses, etc.]</span>
+
+Please:
+1. Identify the top 3–5 themes (with supporting quotes)
+2. Separate bugs/friction from feature requests from general sentiment
+3. Flag anything that seems to contradict our stated strategy
+4. Suggest 2–3 questions I should be asking users to dig deeper
+
+Our current strategy focus is: <span class="placeholder">[one sentence]</span></div>
+        </div>
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">User Interview Prep</div>
+            <span class="prompt-tag tag-research">Research</span>
+          </div>
+          <div class="prompt-card-body">I have a user interview in <span class="placeholder">[X hours]</span> with:
+— Role: <span class="placeholder">[job title]</span>
+— Company: <span class="placeholder">[type/stage]</span>
+— How they use our product: <span class="placeholder">[use case]</span>
+— Why I'm talking to them: <span class="placeholder">[goal]</span>
+
+Write me 8–10 interview questions. Prioritize open questions that reveal behavior over opinions. Include a "problem discovery" section and a "current workflow" section. End with one question that might surface something I'm not expecting.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-metrics" class="tab-panel">
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Metrics Audit</div>
+            <span class="prompt-tag tag-metrics">Metrics</span>
+          </div>
+          <div class="prompt-card-body">Here are the metrics we currently track:
+<span class="placeholder">[list your metrics]</span>
+
+Our product goal is: <span class="placeholder">[goal]</span>
+Our primary user action that signals value: <span class="placeholder">[e.g., "exports a document", "invites a teammate"]</span>
+
+Audit these metrics:
+— Which ones are vanity metrics?
+— Which ones are leading vs lagging indicators?
+— What's missing that we should be tracking?
+— Which 3–5 would you keep if you had to cut the list?
+
+Be direct. I'd rather know what to cut.</div>
+        </div>
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Data Anomaly Investigator</div>
+            <span class="prompt-tag tag-metrics">Metrics</span>
+          </div>
+          <div class="prompt-card-body">I noticed something unusual in our data:
+
+Metric: <span class="placeholder">[metric name]</span>
+Normal baseline: <span class="placeholder">[typical value]</span>
+What I'm seeing: <span class="placeholder">[the anomaly]</span>
+When it started: <span class="placeholder">[date/time]</span>
+Context: <span class="placeholder">[any recent changes — deploys, campaigns, etc.]</span>
+
+Help me diagnose this. Give me:
+1. The most likely causes (ordered by probability)
+2. What data I'd need to confirm each hypothesis
+3. What questions to ask the engineering team
+4. Whether this is worth escalating or monitoring</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-writing" class="tab-panel">
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Executive Update</div>
+            <span class="prompt-tag tag-writing">Writing</span>
+          </div>
+          <div class="prompt-card-body">Write an executive update for <span class="placeholder">[product/feature area]</span>.
+
+Audience: <span class="placeholder">[e.g., C-suite, board, department heads]</span>
+Time period: <span class="placeholder">[e.g., Q2, last month]</span>
+
+Key facts to include:
+— What shipped: <span class="placeholder">[list]</span>
+— Key metrics: <span class="placeholder">[numbers]</span>
+— Biggest learning: <span class="placeholder">[one thing]</span>
+— What's next: <span class="placeholder">[upcoming priorities]</span>
+— Risks or blockers: <span class="placeholder">[if any]</span>
+
+Format: Short (under 300 words). Lead with the most important thing. No jargon. End with a clear ask or decision needed if applicable.</div>
+        </div>
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Announcement Email</div>
+            <span class="prompt-tag tag-writing">Writing</span>
+          </div>
+          <div class="prompt-card-body">Write a product announcement email for: <span class="placeholder">[feature name]</span>
+
+Audience: <span class="placeholder">[existing users / prospects / internal team]</span>
+The feature: <span class="placeholder">[what it does in plain language]</span>
+Why it matters to them: <span class="placeholder">[the specific problem it solves]</span>
+How to access it: <span class="placeholder">[steps or link]</span>
+Tone: <span class="placeholder">[e.g., warm and direct / technical / excited]</span>
+
+Keep it short. Lead with the benefit, not the feature. Include one clear call to action.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-decisions" class="tab-panel">
+      <div class="prompt-grid">
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Decision Framework</div>
+            <span class="prompt-tag tag-decisions">Decisions</span>
+          </div>
+          <div class="prompt-card-body">I need to make a decision about: <span class="placeholder">[decision]</span>
+
+Context:
+— What we're trying to achieve: <span class="placeholder">[goal]</span>
+— The options I'm considering: <span class="placeholder">[list options]</span>
+— Constraints: <span class="placeholder">[time, resources, dependencies]</span>
+— What I'm most uncertain about: <span class="placeholder">[biggest unknown]</span>
+
+Please:
+1. Identify what kind of decision this is (reversible vs irreversible, scope)
+2. List the key criteria for evaluating options
+3. Evaluate each option against those criteria
+4. Recommend one — don't hedge
+
+I'll tell you if I disagree with your recommendation.</div>
+        </div>
+        <div class="prompt-card">
+          <div class="prompt-card-header">
+            <div class="prompt-card-title">Pre-Mortem</div>
+            <span class="prompt-tag tag-decisions">Decisions</span>
+          </div>
+          <div class="prompt-card-body">I'm about to <span class="placeholder">[describe what you're launching or deciding]</span>.
+
+Imagine it's 6 months from now and this failed. Play out the most realistic failure scenarios:
+
+1. What went wrong with user adoption?
+2. What did we miss about the market/users?
+3. What execution problems got us?
+4. What did a competitor do that we didn't anticipate?
+5. What did we assume that turned out to be wrong?
+
+For each scenario, suggest one thing I could do NOW to reduce that risk.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-label">Pro tip: Context is everything</div>
+    <p>Claude's output quality is almost entirely determined by the context you give it. The prompts above work because they specify the audience, the goal, the constraints, and what "good" looks like. If a response isn't useful, don't try a different prompt — give more context. <strong>"That's not quite right — here's why..." is more powerful than starting over.</strong></p>
+  </div>
+</section>
+
+<!-- PRODUCT PULSE -->
+<section id="pulse" class="section fade-in">
+  <div class="section-label">Chapter 05</div>
+  <h2>The Product Pulse</h2>
+  <p>Strategy tells you where you're going. The pulse tells you where you actually are. It's a regular, structured check-in on how the product is performing — generated by Claude from your data sources, read like a founder would read it.</p>
+  <p>A good pulse fits on one page. It covers four areas:</p>
+
+  <div class="pulse-card">
+    <div class="pulse-header">
+      <div class="pulse-title">Product Pulse · Weekly Report</div>
+      <div class="pulse-date">Generated: Monday, 8:00 AM</div>
+    </div>
+    <div class="pulse-section">
+      <div class="pulse-section-label">🔦 Headlines</div>
+      <div class="pulse-line"><span class="pulse-up">↑</span> Weekly active users up 12% week-over-week — best week since launch</div>
+      <div class="pulse-line"><span class="pulse-flag">⚠</span> Exports dropped 8% despite higher WAU — worth investigating</div>
+      <div class="pulse-line"><span class="pulse-down">↓</span> p95 latency spiked Tuesday 2–4pm; tied to a third-party API issue (resolved)</div>
+    </div>
+    <div class="pulse-section">
+      <div class="pulse-section-label">📊 Usage</div>
+      <div class="pulse-line"><span class="pulse-neutral">Sessions:</span> 4,821 <span class="pulse-up">(+18%)</span></div>
+      <div class="pulse-line"><span class="pulse-neutral">Exports completed:</span> 1,103 <span class="pulse-down">(−8%)</span></div>
+      <div class="pulse-line"><span class="pulse-neutral">New signups:</span> 214 <span class="pulse-up">(+22%)</span></div>
+      <div class="pulse-line"><span class="pulse-neutral">Trial → Paid conversions:</span> 31 <span class="pulse-up">(+3%)</span></div>
+    </div>
+    <div class="pulse-section">
+      <div class="pulse-section-label">⚙ System Performance</div>
+      <div class="pulse-line"><span class="pulse-neutral">p50 latency:</span> 210ms <span class="pulse-neutral">(baseline: 205ms)</span></div>
+      <div class="pulse-line"><span class="pulse-neutral">p95 latency:</span> 1,840ms <span class="pulse-flag">(+60% — Tuesday spike, resolved)</span></div>
+      <div class="pulse-line"><span class="pulse-neutral">Top error:</span> 429 from OpenAI API · 43 occurrences · rate limiting during spike</div>
+    </div>
+    <div class="pulse-section">
+      <div class="pulse-section-label">🔎 Follow-ups</div>
+      <div class="pulse-line">1. Why did exports drop while sessions rose? Investigate the sessions → export funnel</div>
+      <div class="pulse-line">2. New signup cohort is large — are onboarding completion rates holding?</div>
+      <div class="pulse-line">3. Rate limiting during traffic spikes — consider request queuing before next campaign</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 2.5rem;">Setting up your own pulse</h3>
+  <p>You need your product to be instrumented — analytics, errors, and ideally payments. If you're not there yet, start with PostHog (free, easy setup). Then use this prompt to get Claude to help you define what to track:</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-label">Pulse Setup Prompt</span>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    </div>
+    <div class="code-body">I want to set up a weekly product pulse report. Help me define what to include.
+
+My product: <span class="placeholder">[what it does]</span>
+My key metrics (from strategy doc): <span class="placeholder">[list]</span>
+Data sources I have access to: <span class="placeholder">[analytics tool, error tracking, payments, DB]</span>
+Team size: <span class="placeholder">[how many people will read this]</span>
+
+For each data source, suggest:
+1. The 2–3 most important signals to pull
+2. The format (number, percentage change, trend)
+3. What anomaly would be worth flagging
+
+Then draft a pulse template I can use every week. Keep it under 40 lines total.
+I want to be able to read the whole thing in under 3 minutes.</div>
+  </div>
+
+  <h3 style="margin-top: 2rem;">Making it a habit</h3>
+  <p>The value of a pulse compounds over time. One pulse tells you what happened this week. Ten pulses tell you whether a feature actually moved the needle. Thirty pulses reveal seasonal patterns you'd never see otherwise. Save every pulse as a dated file — they become your product's memory.</p>
+
+  <ul class="checklist" id="pulse-checklist">
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>Pick a recurring time (e.g., Monday 8am)</span>
+    </li>
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>Define your 3–5 key metrics before the first run</span>
+    </li>
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>Connect at least one data source (start with analytics)</span>
+    </li>
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>Read the first pulse and give feedback: "Add X, remove Y"</span>
+    </li>
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>Save each pulse report to a folder with the date</span>
+    </li>
+    <li>
+      <div class="check-box" onclick="toggleCheck(this)"></div>
+      <span>After 4 weeks, ask Claude to compare your pulse reports for trends</span>
+    </li>
+  </ul>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="section fade-in">
+  <div class="section-label">Chapter 07</div>
+  <h2>Common Questions</h2>
+  <p>Real questions from product managers starting out with Claude. No fluff.</p>
+
+  <div style="margin-top: 2rem;">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Do I need Claude Code, or can I use Claude.ai?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        You can start with Claude.ai right now — no setup required. Claude Code (a command-line tool) is specifically useful if you want Claude to run queries against your data sources, write and execute code, or maintain files like a strategy.md document across sessions. For the prompts in this guide, Claude.ai is all you need.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How do I get Claude to stop giving generic answers?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        More context, every time. Generic prompts get generic answers. Tell Claude who you are, what product you're building, who your users are, and what "good" looks like in your context. The more specific you are, the more specific the output. If you're still getting generic responses, try explicitly saying: "Don't give me a generic answer. Apply this specifically to my situation: [details]."
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How do I maintain context across conversations?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        Create a "context document" — a short file (200–400 words) that describes your product, your users, your current strategy, and your key metrics. Paste it at the start of any new Claude conversation. This takes 10 seconds and dramatically improves every subsequent response. It's the closest thing to giving Claude persistent memory across sessions in Claude.ai.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Can I trust Claude's analysis of my metrics?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        Trust the structure, verify the substance. Claude is excellent at identifying what questions to ask, what data to pull, and how to structure an analysis. But it doesn't know your business context — a 10% drop in exports might be fine (if you changed your onboarding flow) or alarming (if nothing changed). Always bring your own judgment to the interpretation. Use Claude to accelerate the investigation, not to replace your read.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>My team is resistant to using AI. What do I do?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        Start with yourself. Don't make it a team initiative — just use Claude for your own PM tasks. When you show up to the next sprint planning with a sharper strategy doc, better-researched priorities, and more coherent specs, people notice. Skeptics become curious. Let the output make the argument.
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Is this going to replace product managers?</span>
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-a">
+        No — but it will change what PMs spend their time on. The tasks being automated (writing tickets, synthesizing feedback, generating reports) were never the core of the role. The core has always been judgment, user empathy, and strategic clarity. Those things are more important now, not less. What this does is remove the excuse of not having enough time to do the important stuff.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MIND-BLOWING PROMPTS -->
+<section id="mindblown" class="section fade-in">
+  <div class="section-label">Chapter 06 ✦ Advanced</div>
+  <h2>Five Mind-Blowing Prompts</h2>
+  <p>These aren't templates — they're demonstrations of what Claude can actually do when prompted well. Each one is role-specific, produces dynamic results, and is engineered to be token-efficient: maximum output, minimum waste. Use them in class to show, not just tell.</p>
+
+  <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin: 2rem 0;">
+    <div style="padding: 1rem; background: var(--ink); text-align: center; border-right: 1px solid rgba(255,255,255,0.08);">
+      <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">⚔️</div>
+      <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber);">Prompt 1</div>
+      <div style="font-size: 0.78rem; color: white; font-weight: 600; margin-top: 0.2rem;">Strategy Stress-Tester</div>
+    </div>
+    <div style="padding: 1rem; background: var(--ink); text-align: center; border-right: 1px solid rgba(255,255,255,0.08);">
+      <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">🎭</div>
+      <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber);">Prompt 2</div>
+      <div style="font-size: 0.78rem; color: white; font-weight: 600; margin-top: 0.2rem;">Interview Simulator</div>
+    </div>
+    <div style="padding: 1rem; background: var(--ink); text-align: center; border-right: 1px solid rgba(255,255,255,0.08);">
+      <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">⚖️</div>
+      <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber);">Prompt 3</div>
+      <div style="font-size: 0.78rem; color: white; font-weight: 600; margin-top: 0.2rem;">Feature Tribunal</div>
+    </div>
+    <div style="padding: 1rem; background: var(--amber); text-align: center; border-right: 1px solid rgba(255,255,255,0.2);">
+      <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📊</div>
+      <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink);">Prompt 4</div>
+      <div style="font-size: 0.78rem; color: var(--ink); font-weight: 700; margin-top: 0.2rem;">Metrics Mirror</div>
+    </div>
+    <div style="padding: 1rem; background: var(--amber); text-align: center;">
+      <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📄</div>
+      <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink);">Prompt 5</div>
+      <div style="font-size: 0.78rem; color: var(--ink); font-weight: 700; margin-top: 0.2rem;">PRD Ghost-Writer</div>
+    </div>
+  </div>
+
+  <!-- PROMPT 4: METRICS MIRROR -->
+  <div style="margin-top: 3rem;">
+    <div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+      <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--amber); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">📊</div>
+      <div>
+        <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--amber); margin-bottom: 0.25rem;">Prompt 04 · Metrics</div>
+        <h3 style="margin-bottom: 0.4rem;">The Metrics Mirror</h3>
+        <p style="font-size: 0.88rem; color: var(--muted); margin: 0;">Paste in raw numbers — even messy dashboard copy-paste. Get back a diagnosis, a narrative, and the uncomfortable question leadership will ask that you haven't answered yet.</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+      <div style="background: var(--cream); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem;">
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem;">Why it works</div>
+        <p style="font-size: 0.82rem; margin: 0; color: #3d3a35;">Forces Claude to act as an analyst, not a reporter. The "UNCOMFORTABLE QUESTION" field surfaces what the data implies but nobody says out loud — the thing that makes jaws drop in class.</p>
+      </div>
+      <div style="background: var(--cream); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem;">
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem;">Token efficiency</div>
+        <p style="font-size: 0.82rem; margin: 0; color: #3d3a35;">Strict 4-section format with a "No preamble" instruction eliminates filler. Output is dense and actionable — no paragraph of throat-clearing before the insight.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">Prompt 04 · The Metrics Mirror</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body">You are a data-literate CPO reading a weekly metrics report. I'll give you raw numbers. You give me:
+
+1. HEADLINE (1 sentence — what actually matters this week)
+2. SIGNAL vs NOISE (which numbers are meaningful, which are coincidence)
+3. THE UNCOMFORTABLE QUESTION (the one thing the data implies that nobody wants to say out loud)
+4. RECOMMENDED ACTION (one thing, specific, with a rationale in one sentence)
+
+No preamble. Start with HEADLINE.
+
+My numbers: <span class="placeholder">[paste metrics — even messy copy-paste from a dashboard is fine]</span></div>
+    </div>
+
+    <div style="background: var(--ink); border-radius: 4px; overflow: hidden; margin-top: 1rem;">
+      <div style="padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #5a5560;">Example Response · Claude as CPO</span>
+        <span style="font-size: 0.62rem; color: #5a5560; font-family: 'DM Mono', monospace;">dynamic output</span>
+      </div>
+      <div style="padding: 1.5rem; font-family: 'DM Mono', monospace; font-size: 0.82rem; line-height: 1.8;">
+        <div style="color: var(--amber); font-weight: 600; margin-bottom: 1rem;">HEADLINE</div>
+        <div style="color: #e8e4dc; margin-bottom: 1.5rem;">Exports dropped 8% in a week where sessions hit an all-time high — your product is getting more visitors but delivering less value.</div>
+        <div style="color: var(--amber); font-weight: 600; margin-bottom: 1rem;">SIGNAL vs NOISE</div>
+        <div style="color: #e8e4dc; margin-bottom: 0.5rem;"><span style="color: #5ec47a;">Signal:</span> Session/export ratio declining three weeks in a row — this is a trend, not noise.</div>
+        <div style="color: #e8e4dc; margin-bottom: 0.5rem;"><span style="color: #5ec47a;">Signal:</span> New signups +22% — likely from a recent campaign, explaining higher sessions.</div>
+        <div style="color: #e8e4dc; margin-bottom: 1.5rem;"><span style="color: #e87a6a;">Noise:</span> p95 latency spike was Tuesday only, third-party, resolved — ignore for this analysis.</div>
+        <div style="color: var(--amber); font-weight: 600; margin-bottom: 1rem;">THE UNCOMFORTABLE QUESTION</div>
+        <div style="color: #e8e4dc; margin-bottom: 1.5rem;">Are new users discovering they can't get value from the product, or are power users exporting less because something broke for them? Either answer is bad — one is an acquisition problem, the other is a retention crisis — and right now you can't tell which.</div>
+        <div style="color: var(--amber); font-weight: 600; margin-bottom: 1rem;">RECOMMENDED ACTION</div>
+        <div style="color: #e8e4dc;">Segment exports by user cohort (new vs returning) immediately — if new users aren't exporting, fix onboarding; if returning users dropped off, find the breakage before next week's review.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div style="border-top: 1px solid var(--rule); margin: 3.5rem 0;"></div>
+
+  <!-- PROMPT 5: PRD GHOST-WRITER -->
+  <div>
+    <div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+      <div style="flex-shrink: 0; width: 48px; height: 48px; background: var(--amber); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">📄</div>
+      <div>
+        <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--amber); margin-bottom: 0.25rem;">Prompt 05 · Writing</div>
+        <h3 style="margin-bottom: 0.4rem;">The PRD Ghost-Writer</h3>
+        <p style="font-size: 0.88rem; color: var(--muted); margin: 0;">Take a half-formed idea in plain language and get back a stakeholder-ready PRD in under 60 seconds. This is the "conversation as work" demo that makes PMs put down their laptops.</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+      <div style="background: var(--cream); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem;">
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem;">Why it works</div>
+        <p style="font-size: 0.82rem; margin: 0; color: #3d3a35;">The <strong>[ASSUMED]</strong> flag is the magic. Claude fills in what's missing — but flags every assumption, so the PM can validate rather than wonder. It builds the scaffold; you supply the truth.</p>
+      </div>
+      <div style="background: var(--cream); border: 1px solid var(--rule); border-radius: 4px; padding: 1rem;">
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem;">Token efficiency</div>
+        <p style="font-size: 0.82rem; margin: 0; color: #3d3a35;">Six named sections, hard word caps per section, and "no extra commentary" instruction keeps the output tight. A PRD that fits on a screen is a PRD people actually read.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-label">Prompt 05 · The PRD Ghost-Writer</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <div class="code-body">Write a lean PRD. I'll give you a rough idea. You fill in what's missing using reasonable product assumptions — flag any assumption you make with [ASSUMED].
+
+Output this structure only — no extra commentary:
+
+PROBLEM: (2 sentences max)
+USER: (one specific persona, one sentence)
+SUCCESS METRIC: (one measurable outcome)
+SOLUTION: (3 bullet points — what it does, not how it works)
+OUT OF SCOPE: (2 things we are explicitly NOT doing)
+OPEN QUESTIONS: (2 things that must be answered before build)
+
+My rough idea: <span class="placeholder">[describe the feature in however many words you have — messy is fine]</span></div>
+    </div>
+
+    <div style="background: var(--ink); border-radius: 4px; overflow: hidden; margin-top: 1rem;">
+      <div style="padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #5a5560;">Example Response · Input: "we should let users save their filters"</span>
+        <span style="font-size: 0.62rem; color: #5a5560; font-family: 'DM Mono', monospace;">dynamic output</span>
+      </div>
+      <div style="padding: 1.5rem; font-family: 'DM Mono', monospace; font-size: 0.82rem; line-height: 1.8;">
+        <div style="margin-bottom: 0.75rem;"><span style="color: var(--amber); font-weight: 600;">PROBLEM:</span> <span style="color: #e8e4dc;">Power users repeatedly configure the same filter combinations to do their work, losing that setup every session. Recreating filters manually wastes time and creates friction before users reach their core task.</span></div>
+        <div style="margin-bottom: 0.75rem;"><span style="color: var(--amber); font-weight: 600;">USER:</span> <span style="color: #e8e4dc;">A recurring user <span style="color: #f0a070;">[ASSUMED: logged-in, 3+ sessions/week]</span> who uses filters as part of a regular workflow, not for one-off searches.</span></div>
+        <div style="margin-bottom: 0.75rem;"><span style="color: var(--amber); font-weight: 600;">SUCCESS METRIC:</span> <span style="color: #e8e4dc;">≥30% of active users save at least one filter within 14 days of feature launch <span style="color: #f0a070;">[ASSUMED: "active" = 2+ sessions/week]</span>.</span></div>
+        <div style="margin-bottom: 0.75rem;"><span style="color: var(--amber); font-weight: 600;">SOLUTION:</span>
+          <div style="color: #e8e4dc; margin-left: 1rem; margin-top: 0.3rem;">— Users can name and save any active filter state with one click</div>
+          <div style="color: #e8e4dc; margin-left: 1rem;">— Saved filters appear in a persistent sidebar or dropdown, per user</div>
+          <div style="color: #e8e4dc; margin-left: 1rem;">— Saved filters can be renamed or deleted from a simple management view</div>
+        </div>
+        <div style="margin-bottom: 0.75rem;"><span style="color: var(--amber); font-weight: 600;">OUT OF SCOPE:</span>
+          <div style="color: #9b9590; margin-left: 1rem; margin-top: 0.3rem;">— Sharing saved filters between users or teams</div>
+          <div style="color: #9b9590; margin-left: 1rem;">— Scheduled or automated filter execution</div>
+        </div>
+        <div><span style="color: var(--amber); font-weight: 600;">OPEN QUESTIONS:</span>
+          <div style="color: #e87a6a; margin-left: 1rem; margin-top: 0.3rem;">1. Are saved filters tied to the user account or the device/browser?</div>
+          <div style="color: #e87a6a; margin-left: 1rem;">2. Is there a limit on how many filters a user can save, and if so, what happens when they hit it?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS TABLE -->
+  <div style="margin-top: 3rem; padding: 2rem; background: var(--cream); border: 1px solid var(--rule); border-radius: 4px;">
+    <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--amber); margin-bottom: 1rem;">All Five Prompts · What They Teach</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;">
+      <div style="padding: 0.75rem 1rem; background: var(--ink); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5a5560; border-right: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07);">Prompt</div>
+      <div style="padding: 0.75rem 1rem; background: var(--ink); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5a5560; border-right: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07);">PM Skill it Builds</div>
+      <div style="padding: 0.75rem 1rem; background: var(--ink); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #5a5560; border-bottom: 1px solid rgba(255,255,255,0.07);">The "Wow" Moment</div>
+
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; font-weight: 600; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">⚔️ Strategy Stress-Tester</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: #3d3a35;">Strategic thinking + handling pushback</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-bottom: 1px solid var(--rule); color: #3d3a35;">It attacks your strategy harder than your manager does</div>
+
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; font-weight: 600; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">🎭 Interview Simulator</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: #3d3a35;">Discovery + listening skills</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-bottom: 1px solid var(--rule); color: #3d3a35;">The persona pushes back — it's not a yes machine</div>
+
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; font-weight: 600; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">⚖️ Feature Tribunal</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: #3d3a35;">Stakeholder navigation + prioritization</div>
+      <div style="padding: 0.75rem 1rem; background: white; font-size: 0.8rem; border-bottom: 1px solid var(--rule); color: #3d3a35;">Three stakeholders argue simultaneously, in character</div>
+
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; font-weight: 700; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule);">📊 Metrics Mirror ✦</div>
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); color: #3d3a35;">Data literacy + exec communication</div>
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; border-bottom: 1px solid var(--rule); color: #3d3a35;">The Uncomfortable Question no one says out loud</div>
+
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; font-weight: 700; border-right: 1px solid var(--rule);">📄 PRD Ghost-Writer ✦</div>
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; border-right: 1px solid var(--rule); color: #3d3a35;">Speed + structured thinking</div>
+      <div style="padding: 0.75rem 1rem; background: var(--amber-pale); font-size: 0.8rem; color: #3d3a35;">A full PRD from 8 words of rough input</div>
+    </div>
+    <p style="font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; margin-bottom: 0;">✦ = prompts with full worked examples above. The five prompts together cover the complete PM lifecycle in a single workshop session.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div class="cta-inner">
+    <h2>Start with one prompt today.</h2>
+    <p>You don't need a perfect setup or a new workflow. Pick one task you're doing this week — a spec, a feedback synthesis, a prioritization decision — and try the relevant prompt from Chapter 04. Iterate from there.</p>
+    <a href="https://claude.ai" class="cta-btn" target="_blank">Open Claude →</a>
+    <a href="pm-claude-code-guide.html" class="cta-btn" style="background:transparent; border:1.5px solid rgba(255,255,255,0.25); margin-left:0.5rem;">⚡ Ready to build? Try Claude Code →</a>
+  </div>
+</div>
+
+<footer>
+  <p>Based on <em>A Guide to Agent-native Product Management</em> by Marcus Moretti (Every / Compound Engineering). Expanded for product managers learning to work with Claude.</p>
+  <p style="margin-top:0.5rem;">Part of the PM × Claude course series — <a href="pm-claude-code-guide.html" style="color:var(--amber);">Claude Code Starter Guide →</a></p>
+</footer>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+  });
+
+  // Fade in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Tabs
+  function switchTab(btn, panelId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  // FAQ
+  function toggleFaq(el) {
+    el.classList.toggle('open');
+    el.nextElementSibling.classList.toggle('open');
+  }
+
+  // Checkboxes
+  function toggleCheck(box) {
+    box.classList.toggle('checked');
+    box.innerHTML = box.classList.contains('checked') ? '✓' : '';
+    box.closest('li').classList.toggle('done', box.classList.contains('checked'));
+  }
+
+  // Copy code
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('.code-body').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>

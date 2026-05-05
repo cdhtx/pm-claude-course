@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding with Claude Code · PM Starter Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f5f3ee;
+    --cream: #ede9e0;
+    --amber: #d4820a;
+    --amber-light: #f5a623;
+    --amber-pale: #fdf3e0;
+    --teal: #1a6b6b;
+    --teal-light: #2d9696;
+    --teal-pale: #f0fafa;
+    --purple: #5b3fa6;
+    --purple-pale: #f5f0ff;
+    --muted: #6b6760;
+    --rule: #d4cfc5;
+    --code-bg: #1a1a24;
+    --code-text: #e8e4dc;
+    --code-green: #5ec47a;
+    --code-amber: #f5a623;
+    --code-blue: #79c0e0;
+    --code-red: #e87a6a;
+    --code-gray: #5a5560;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* PROGRESS */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--teal-light), var(--amber));
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(245,243,238,0.93);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    z-index: 999;
+    padding: 0 2rem;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: var(--ink); text-decoration: none; }
+  .nav-logo span { color: var(--teal-light); }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--ink); }
+  @media(max-width:640px){ .nav-links { display:none; } }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 2rem 4rem;
+    max-width: 900px; margin: 0 auto;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--teal-light);
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .hero-eyebrow::before { content:''; display:inline-block; width:24px; height:2px; background:var(--teal-light); }
+  h1.hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    line-height: 1.05; letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  h1.hero-title em { font-style: italic; color: var(--teal-light); }
+  .hero-subtitle { font-size: 1.1rem; color: var(--muted); max-width: 600px; line-height: 1.6; margin-bottom: 2.5rem; }
+  .hero-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    border-top: 1px solid var(--rule); padding-top: 1.5rem;
+  }
+  .hero-meta-item { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .hero-meta-item strong { display:block; font-size:0.88rem; color:var(--ink); font-weight:700; text-transform:none; letter-spacing:0; margin-top:0.1rem; }
+  .hero-deco { position:absolute; right:-2rem; top:28%; font-size:13rem; opacity:0.04; font-family:'DM Mono',monospace; pointer-events:none; line-height:1; }
+  .scroll-hint { margin-top:3rem; display:flex; align-items:center; gap:0.75rem; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+  .scroll-arrow { width:32px; height:32px; border:1.5px solid var(--rule); border-radius:50%; display:flex; align-items:center; justify-content:center; animation: bounce 2s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+
+  /* SECTIONS */
+  .section { max-width: 860px; margin: 0 auto; padding: 5rem 2rem; border-top: 1px solid var(--rule); }
+  .section-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--teal-light); margin-bottom:0.5rem; }
+  h2 { font-family:'DM Serif Display',serif; font-size:clamp(1.8rem,3.5vw,2.8rem); line-height:1.15; letter-spacing:-0.02em; margin-bottom:1.25rem; }
+  h3 { font-family:'DM Serif Display',serif; font-size:1.35rem; line-height:1.2; margin-bottom:0.75rem; }
+  p { margin-bottom: 1rem; color: #3d3a35; }
+  p:last-child { margin-bottom: 0; }
+
+  /* FADE */
+  .fade-in { opacity:0; transform:translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .fade-in.visible { opacity:1; transform:none; }
+
+  /* THE THREE PHASES */
+  .phases {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 0; margin-top: 2.5rem;
+    border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+  }
+  .phase {
+    padding: 2rem 1.75rem;
+    position: relative;
+    border-right: 1px solid var(--rule);
+    background: white;
+  }
+  .phase:last-child { border-right: none; }
+  .phase.active { background: var(--ink); }
+  .phase-num { font-family:'DM Serif Display',serif; font-size:3.5rem; line-height:1; color:var(--rule); position:absolute; top:1.25rem; right:1.25rem; }
+  .phase.active .phase-num { color:#2a2a35; }
+  .phase-icon { font-size:1.5rem; margin-bottom:0.75rem; }
+  .phase-label { font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--teal-light); margin-bottom:0.4rem; }
+  .phase.active .phase-label { color:var(--amber); }
+  .phase h3 { font-size:1.1rem; margin-bottom:0.5rem; }
+  .phase.active h3 { color:white; }
+  .phase p { font-size:0.82rem; color:var(--muted); line-height:1.55; }
+  .phase.active p { color:#9b9590; }
+  @media(max-width:640px){ .phases{grid-template-columns:1fr;} .phase{border-right:none; border-bottom:1px solid var(--rule);} }
+
+  /* INSTALL STEPS */
+  .install-steps { margin-top: 2rem; display:grid; gap:0; border:1px solid var(--rule); border-radius:4px; overflow:hidden; }
+  .install-step { display:grid; grid-template-columns:56px 1fr; border-bottom:1px solid var(--rule); }
+  .install-step:last-child { border-bottom:none; }
+  .step-num { background:var(--ink); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:0.8rem; font-weight:500; color:var(--teal-light); border-right:1px solid rgba(255,255,255,0.07); }
+  .step-body { padding:1.25rem 1.5rem; background:white; }
+  .step-title { font-size:0.82rem; font-weight:700; margin-bottom:0.3rem; }
+  .step-desc { font-size:0.82rem; color:var(--muted); line-height:1.5; margin-bottom:0.6rem; }
+  .step-desc:last-child { margin-bottom:0; }
+
+  /* OS TABS */
+  .os-tabs { margin-top:0.75rem; }
+  .os-tab-list { display:flex; gap:0; margin-bottom:0; }
+  .os-btn { padding:0.4rem 0.9rem; font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; background:var(--cream); border:1px solid var(--rule); border-bottom:none; cursor:pointer; color:var(--muted); transition:all 0.15s; }
+  .os-btn:first-child { border-radius:3px 0 0 0; }
+  .os-btn:last-child { border-radius:0 3px 0 0; }
+  .os-btn.active { background:var(--code-bg); color:var(--code-amber); border-color:var(--code-bg); }
+  .os-panel { display:none; }
+  .os-panel.active { display:block; }
+
+  /* CODE BLOCKS */
+  .code-block { background:var(--code-bg); border-radius:0 4px 4px 4px; overflow:hidden; margin:0.5rem 0 0; font-family:'DM Mono',monospace; }
+  .code-block-standalone { background:var(--code-bg); border-radius:6px; overflow:hidden; margin:1.5rem 0; font-family:'DM Mono',monospace; }
+  .code-header { display:flex; justify-content:space-between; align-items:center; padding:0.65rem 1.25rem; background:rgba(255,255,255,0.04); border-bottom:1px solid rgba(255,255,255,0.07); }
+  .code-label { font-size:0.62rem; font-weight:500; text-transform:uppercase; letter-spacing:0.1em; color:var(--code-gray); }
+  .copy-btn { font-size:0.62rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--code-amber); background:none; border:1px solid rgba(212,130,10,0.3); border-radius:3px; cursor:pointer; padding:0.18rem 0.5rem; transition:all 0.15s; }
+  .copy-btn:hover { background:rgba(212,130,10,0.1); }
+  .code-body { padding:1rem 1.25rem; color:var(--code-text); font-size:0.83rem; line-height:1.75; white-space:pre; overflow-x:auto; }
+  .code-body.wrap { white-space: pre-wrap; }
+  .c-cmd { color:var(--code-amber); }
+  .c-comment { color:var(--code-gray); font-style:italic; }
+  .c-green { color:var(--code-green); }
+  .c-blue { color:var(--code-blue); }
+  .c-red { color:var(--code-red); }
+  .c-dim { color:#5a5560; }
+  .placeholder { color:var(--code-amber); }
+
+  /* CALLOUTS */
+  .callout { border-left:3px solid; padding:1.25rem 1.5rem; border-radius:0 4px 4px 0; margin:1.75rem 0; }
+  .callout-tip { border-color:var(--teal-light); background:var(--teal-pale); }
+  .callout-warn { border-color:var(--amber); background:var(--amber-pale); }
+  .callout-key { border-color:var(--purple); background:var(--purple-pale); }
+  .callout-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.4rem; }
+  .callout-tip .callout-label { color:var(--teal); }
+  .callout-warn .callout-label { color:#8b5a00; }
+  .callout-key .callout-label { color:var(--purple); }
+  .callout p { font-size:0.88rem; color:#3d3a35; margin:0; }
+
+  /* ACCEPT/REJECT GUIDE */
+  .decision-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--rule); border-radius:4px; overflow:hidden; margin-top:2rem; }
+  .decision-col { padding:2rem; }
+  .decision-col:first-child { background:var(--ink); border-right:1px solid rgba(255,255,255,0.08); }
+  .decision-col:last-child { background:#f9fff9; }
+  .decision-col h3 { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1.25rem; font-family:'Syne',sans-serif; }
+  .decision-col:first-child h3 { color:var(--code-red); }
+  .decision-col:last-child h3 { color:var(--teal); }
+  .decision-item { display:flex; gap:0.75rem; align-items:flex-start; margin-bottom:1rem; font-size:0.85rem; line-height:1.5; }
+  .decision-col:first-child .decision-item { color:#d4cfc5; }
+  .decision-col:last-child .decision-item { color:#2a4a2a; }
+  .d-icon { flex-shrink:0; margin-top:0.1rem; font-size:0.85rem; }
+  @media(max-width:640px){ .decision-grid{grid-template-columns:1fr;} .decision-col:first-child{border-right:none; border-bottom:1px solid rgba(255,255,255,0.08);} }
+
+  /* PROMPT CARDS */
+  .prompt-section { margin-top: 3rem; }
+  .prompt-header-band {
+    display:flex; align-items:center; gap:1.5rem;
+    padding: 1.5rem 2rem;
+    background: var(--ink);
+    border-radius: 4px 4px 0 0;
+  }
+  .prompt-phase-badge {
+    flex-shrink:0;
+    width:52px; height:52px;
+    border:2px solid rgba(255,255,255,0.1);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem;
+  }
+  .prompt-header-text {}
+  .prompt-header-phase { font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--code-gray); margin-bottom:0.2rem; }
+  .prompt-header-title { font-family:'DM Serif Display',serif; font-size:1.4rem; color:white; line-height:1.2; }
+  .prompt-header-sub { font-size:0.8rem; color:#9b9590; margin-top:0.2rem; }
+  .prompt-body { border:1px solid var(--rule); border-top:none; border-radius:0 0 4px 4px; overflow:hidden; background:white; }
+  .prompt-why { display:grid; grid-template-columns:1fr 1fr; gap:0; border-bottom:1px solid var(--rule); }
+  .prompt-why-cell { padding:1.25rem 1.5rem; font-size:0.82rem; line-height:1.55; color:#3d3a35; }
+  .prompt-why-cell:first-child { border-right:1px solid var(--rule); background:var(--cream); }
+  .prompt-why-label { font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:0.4rem; }
+  .prompt-code { }
+  .prompt-response { border-top:1px solid var(--rule); }
+
+  /* WORKFLOW ARROW */
+  .workflow { display:flex; align-items:stretch; gap:0; margin:2.5rem 0; }
+  .wf-step { flex:1; background:white; border:1px solid var(--rule); padding:1.25rem; position:relative; }
+  .wf-step:not(:last-child)::after {
+    content:'→';
+    position:absolute; right:-14px; top:50%;
+    transform:translateY(-50%);
+    color:var(--amber); font-size:1.1rem; font-weight:700;
+    z-index:2; background:var(--paper); padding:0 2px;
+  }
+  .wf-step:not(:first-child) { border-left:none; }
+  .wf-num { font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--teal-light); margin-bottom:0.3rem; }
+  .wf-title { font-size:0.85rem; font-weight:700; margin-bottom:0.2rem; }
+  .wf-desc { font-size:0.75rem; color:var(--muted); line-height:1.4; }
+  @media(max-width:640px){ .workflow{flex-direction:column;} .wf-step:not(:last-child)::after{display:none;} .wf-step:not(:first-child){border-left:1px solid var(--rule); border-top:none;} }
+
+  /* TERMINAL DEMO */
+  .terminal {
+    background:var(--code-bg); border-radius:8px; overflow:hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    margin: 2rem 0;
+  }
+  .terminal-bar {
+    background:#2a2a35; padding:0.75rem 1.25rem;
+    display:flex; align-items:center; gap:0.5rem;
+  }
+  .t-dot { width:10px; height:10px; border-radius:50%; }
+  .t-dot.red { background:#e87a6a; }
+  .t-dot.yellow { background:#f5a623; }
+  .t-dot.green { background:#5ec47a; }
+  .t-label { font-size:0.7rem; color:#5a5560; font-family:'DM Mono',monospace; margin-left:0.5rem; }
+  .terminal-body { padding:1.5rem; font-family:'DM Mono',monospace; font-size:0.82rem; line-height:1.9; }
+  .t-line { display:flex; gap:0.5rem; }
+  .t-prompt { color:var(--teal-light); flex-shrink:0; }
+  .t-input { color:var(--code-text); }
+  .t-output { color:#9b9590; padding-left:0; }
+  .t-success { color:var(--code-green); }
+  .t-claude { color:var(--code-amber); }
+  .t-action { color:var(--code-blue); }
+  .t-accept { background:rgba(94,196,122,0.1); border:1px solid rgba(94,196,122,0.2); border-radius:3px; padding:0.1rem 0.5rem; color:var(--code-green); font-size:0.75rem; }
+  .t-reject { background:rgba(232,122,106,0.1); border:1px solid rgba(232,122,106,0.2); border-radius:3px; padding:0.1rem 0.5rem; color:var(--code-red); font-size:0.75rem; }
+  .t-gap { height:0.6rem; }
+
+  /* CTA */
+  .cta-band { background:var(--ink); padding:4rem 2rem; margin-top:2rem; }
+  .cta-inner { max-width:680px; margin:0 auto; text-align:center; }
+  .cta-inner h2 { font-family:'DM Serif Display',serif; color:white; margin-bottom:1rem; }
+  .cta-inner p { color:#9b9590; margin-bottom:2rem; font-size:0.95rem; }
+  .cta-btn { display:inline-flex; align-items:center; gap:0.5rem; background:var(--teal-light); color:white; font-weight:700; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.08em; padding:0.9rem 2rem; border-radius:3px; text-decoration:none; transition:all 0.2s; margin:0.4rem; }
+  .cta-btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .cta-btn.secondary { background:transparent; border:1.5px solid rgba(255,255,255,0.2); color:white; }
+
+  footer { padding:2rem; border-top:1px solid var(--rule); text-align:center; font-size:0.75rem; color:var(--muted); max-width:860px; margin:0 auto; }
+
+  /* CHECKLIST */
+  .check-list { list-style:none; margin:1.25rem 0; }
+  .check-list li { display:flex; align-items:flex-start; gap:0.75rem; padding:0.5rem 0; border-bottom:1px solid var(--rule); font-size:0.88rem; }
+  .check-list li:last-child { border-bottom:none; }
+  .cb { width:18px; height:18px; flex-shrink:0; border:1.5px solid var(--rule); border-radius:3px; background:white; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--teal); font-weight:700; transition:all 0.15s; margin-top:0.1rem; }
+  .cb:hover { border-color:var(--teal-light); }
+  .cb.checked { background:var(--teal-light); border-color:var(--teal-light); color:white; }
+  .check-list li.done span { text-decoration:line-through; opacity:0.5; }
+
+  /* BACK LINK */
+  .back-link { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .back-link:hover { color:var(--ink); }
+  .nav-pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    background: var(--teal-light); color: white !important;
+    padding: 0.3rem 0.75rem; border-radius: 20px;
+    text-decoration: none; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-pill:hover { background: var(--amber) !important; color: white !important; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav>
+  <a href="#" class="nav-logo">PM × <span>Claude Code</span></a>
+  <ul class="nav-links">
+    <li><a href="#whatisit">What Is It</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#prompt1">Brainstorm</a></li>
+    <li><a href="#prompt2">Tech Spec</a></li>
+    <li><a href="#prompt3">Build</a></li>
+    <li><a href="#accept">Accept Changes</a></li>
+    <li><a href="pm-claude-guide.html" class="nav-pill">← PM Field Guide</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-deco">&gt;_</div>
+  <div class="hero-eyebrow">Companion Guide · Claude Code for PMs</div>
+  <h1 class="hero-title">
+    Start <em>Vibe Coding</em><br>
+    with Claude Code
+  </h1>
+  <p class="hero-subtitle">
+    You don't need to be an engineer. You need an idea, a terminal, and three prompts. This guide takes PM students from zero to shipping their first app — using the same three-phase workflow that professionals use.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">Prerequisite<strong>None (seriously)</strong></div>
+    <div class="hero-meta-item">Time to First Build<strong>~30 minutes</strong></div>
+    <div class="hero-meta-item">Cost<strong>Included in Claude Pro ($20/mo)</strong></div>
+    <div class="hero-meta-item">Works On<strong>Mac, Windows, Linux</strong></div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow">↓</div>
+    Let's build something
+  </div>
+</section>
+
+<!-- WHAT IS CLAUDE CODE -->
+<section id="whatisit" class="section fade-in">
+  <div class="section-label">Part 01 · What Is It</div>
+  <h2>Claude Code is Claude in your terminal</h2>
+  <p>Claude.ai is a chat window. Claude Code is Claude with hands — it can read your files, write code, run commands, and build working software, all from a conversation in your terminal. You describe what you want, it builds it, shows you the changes, and asks if you want to keep them.</p>
+  <p>Think of it less like an AI chatbot and more like a brilliant engineer sitting next to you — one who never gets tired, never judges your questions, and can go from your raw idea to a working prototype faster than you can finish your coffee.</p>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-num">01</div>
+      <div class="phase-icon">💬</div>
+      <div class="phase-label">Claude.ai</div>
+      <h3>Chat Interface</h3>
+      <p>Conversations, analysis, writing, brainstorming. Great for strategy and thinking work. Can't touch your files or build real software.</p>
+    </div>
+    <div class="phase active">
+      <div class="phase-num">02</div>
+      <div class="phase-icon">⚡</div>
+      <div class="phase-label">Claude Code ← You Are Here</div>
+      <h3>Agentic Terminal</h3>
+      <p>Claude with full access to your file system. Reads, writes, runs, and builds. Shows you every change before it's permanent. This is where you build things.</p>
+    </div>
+    <div class="phase">
+      <div class="phase-num">03</div>
+      <div class="phase-icon">🔌</div>
+      <div class="phase-label">Claude API</div>
+      <h3>Developer Integration</h3>
+      <p>For building Claude into your own products. Requires coding knowledge. Not where you start — where you graduate to.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-key" style="margin-top:2rem;">
+    <div class="callout-label">The key difference</div>
+    <p>Claude.ai answers questions. Claude Code takes actions. When you ask it to "build a dashboard," it actually builds one — creates the files, writes the code, and shows you the result. <strong>You stay in control by reviewing and approving every change before it's saved.</strong></p>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install" class="section fade-in">
+  <div class="section-label">Part 02 · Install</div>
+  <h2>Get set up in under 10 minutes</h2>
+  <p>The official recommendation is now the native installer — no Node.js required. If you already have a Claude Pro subscription ($20/month), you're ready to go right now.</p>
+
+  <div class="install-steps">
+
+    <div class="install-step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <div class="step-title">Open your terminal</div>
+        <div class="step-desc">Mac: Press <strong>⌘ + Space</strong>, type "Terminal", hit Enter. &nbsp;·&nbsp; Windows: Search "PowerShell" in Start menu. &nbsp;·&nbsp; Linux: You already know.</div>
+        <div class="step-desc">You'll see a blinking cursor. That's it. You're in the right place.</div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <div class="step-title">Run the installer</div>
+        <div class="step-desc">Copy the command for your system and paste it into the terminal, then press Enter.</div>
+        <div class="os-tabs">
+          <div class="os-tab-list">
+            <button class="os-btn active" onclick="switchOS(this,'os-mac')">Mac</button>
+            <button class="os-btn" onclick="switchOS(this,'os-win')">Windows</button>
+            <button class="os-btn" onclick="switchOS(this,'os-linux')">Linux</button>
+          </div>
+          <div id="os-mac" class="os-panel active">
+            <div class="code-block">
+              <div class="code-header"><span class="code-label">macOS · Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <div class="code-body"><span class="c-cmd">curl -fsSL https://claude.ai/install.sh | sh</span></div>
+            </div>
+          </div>
+          <div id="os-win" class="os-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-label">Windows · PowerShell (run as Administrator)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <div class="code-body"><span class="c-cmd">irm https://claude.ai/install.ps1 | iex</span></div>
+            </div>
+          </div>
+          <div id="os-linux" class="os-panel">
+            <div class="code-block">
+              <div class="code-header"><span class="code-label">Linux · Terminal</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <div class="code-body"><span class="c-cmd">curl -fsSL https://claude.ai/install.sh | sh</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <div class="step-title">Log in with your Claude account</div>
+        <div class="step-desc">Type <code style="background:var(--cream);padding:0.1rem 0.4rem;border-radius:3px;font-family:'DM Mono',monospace;font-size:0.85em;">claude</code> and press Enter. You'll be prompted to log in — use the same account as your Claude Pro subscription. Your credentials are saved after the first login.</div>
+        <div class="code-block" style="margin-top:0.75rem;">
+          <div class="code-body"><span class="c-green">✓</span> <span class="c-comment">Logged in as you@email.com</span>
+<span class="c-green">✓</span> <span class="c-comment">Claude Code is ready</span>
+<span class="c-dim">Type a message or /help to get started</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <div class="step-title">Create a project folder and start</div>
+        <div class="step-desc">Navigate to (or create) the folder where you want to build something. Claude Code works within the folder you start it in.</div>
+        <div class="code-block" style="margin-top:0.75rem;">
+          <div class="code-header"><span class="code-label">First project setup</span></div>
+          <div class="code-body"><span class="c-cmd">mkdir my-first-app</span>    <span class="c-comment"># create a new folder</span>
+<span class="c-cmd">cd my-first-app</span>       <span class="c-comment"># go into it</span>
+<span class="c-cmd">claude</span>                <span class="c-comment"># start Claude Code</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout callout-tip" style="margin-top:1.75rem;">
+    <div class="callout-label">Already a Claude Pro subscriber?</div>
+    <p>Good news — Claude Code is included. You don't need a separate subscription or API key. Just install, log in with your existing account, and go. If you hit usage limits, the Max plan ($100/month) gives significantly more capacity for heavy building sessions.</p>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Windows note</div>
+    <p>Use PowerShell, not Command Prompt (CMD). If you see <code style="font-family:'DM Mono',monospace;">PS C:\</code> at your cursor, you're in the right place. Git for Windows is recommended for the best experience — Claude Code can use it for tracking changes to your project.</p>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow" class="section fade-in">
+  <div class="section-label">Part 03 · The Workflow</div>
+  <h2>Three prompts. One working product.</h2>
+  <p>This is the three-phase workflow that takes you from a rough idea to something real. Each phase has one core prompt. The key insight: <strong>don't skip phases.</strong> Brainstorming first makes the tech spec better. A good tech spec makes the build dramatically faster and cleaner.</p>
+
+  <div class="workflow">
+    <div class="wf-step">
+      <div class="wf-num">Phase 1</div>
+      <div class="wf-title">🧠 Brainstorm</div>
+      <div class="wf-desc">Pressure-test your idea. Get Claude to poke holes, ask hard questions, and sharpen the concept before any code is written.</div>
+    </div>
+    <div class="wf-step">
+      <div class="wf-num">Phase 2</div>
+      <div class="wf-title">📋 Tech Spec</div>
+      <div class="wf-desc">Turn the sharpened idea into a precise technical blueprint. This is what Claude Code will build from — specificity here pays off enormously.</div>
+    </div>
+    <div class="wf-step">
+      <div class="wf-num">Phase 3</div>
+      <div class="wf-title">🏗️ Build</div>
+      <div class="wf-desc">Hand Claude the spec and let it build. Review each change it proposes. Accept what's right. Redirect what isn't.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-key">
+    <div class="callout-label">Why this order matters</div>
+    <p>Jumping straight to "build me an app" produces generic, brittle results. The brainstorm + spec combo gives Claude the context it needs to make good decisions throughout the build — what to prioritize, what to skip, what "done" looks like. <strong>80% planning, 20% execution.</strong> The spec is your contract with Claude.</p>
+  </div>
+</section>
+
+<!-- PROMPT 1: BRAINSTORM -->
+<section id="prompt1" class="section fade-in">
+  <div class="section-label">Part 04 · Phase 1</div>
+  <h2>The Brainstorm Prompt</h2>
+  <p>Use this before any code is written — even before you open Claude Code. This can happen in Claude.ai or at the start of a Claude Code session. The goal: stress-test your idea and arrive at a clear, specific concept before building anything.</p>
+
+  <div class="prompt-section">
+    <div class="prompt-header-band">
+      <div class="prompt-phase-badge">🧠</div>
+      <div class="prompt-header-text">
+        <div class="prompt-header-phase">Phase 1 of 3 · Brainstorm</div>
+        <div class="prompt-header-title">The Idea Pressure-Tester</div>
+        <div class="prompt-header-sub">Run this before a single line of code is written</div>
+      </div>
+    </div>
+    <div class="prompt-body">
+      <div class="prompt-why">
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">What it does</div>
+          Claude plays three distinct roles: a curious potential user (who reveals real pain), a skeptical engineer (who reveals what's actually hard to build), and a strategic advisor (who reveals if this is the right problem to solve at all). You get three perspectives in one conversation.
+        </div>
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">Why it's token-efficient</div>
+          Structured three-role format prevents rambling. "One question at a time" keeps the conversation moving without wasting tokens on unsolicited advice. The final output is a single crisp paragraph — not a 10-page report.
+        </div>
+      </div>
+      <div class="prompt-code">
+        <div class="code-block-standalone" style="margin:0; border-radius:0;">
+          <div class="code-header">
+            <span class="code-label">Prompt 1 · Brainstorm</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <div class="code-body wrap">I have an idea I want to build. Before we write any code, I need you to pressure-test it with me.
+
+Play three roles — one at a time, clearly labeled:
+
+🙋 USER: A real person who has this problem. Ask me one probing question about whether this actually solves a pain you feel day-to-day. Be honest if the solution sounds like a solution looking for a problem.
+
+⚙️ ENGINEER: Someone who has to build this. Ask me one question about scope, complexity, or a technical assumption I might be making that could blow up the timeline.
+
+🎯 ADVISOR: A strategic product thinker. Ask me one question about whether this is the right problem to solve, the right time to solve it, and whether I'm the right person to build it.
+
+After I respond to all three, give me:
+— A sharpened one-paragraph version of my idea that incorporates what you've learned
+— The single biggest risk I should resolve before building
+— A go / no-go recommendation with one sentence of reasoning
+
+My idea: <span class="placeholder">[describe your idea in plain language — as rough as you like]</span></div>
+        </div>
+      </div>
+      <div class="prompt-response">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
+            <div class="t-label">claude — brainstorm session example</div>
+          </div>
+          <div class="terminal-body">
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> I want to build a dashboard that shows PMs their key product metrics in one place, pulling from PostHog, Stripe, and Linear</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">Claude  🙋 USER:</span></div>
+<div class="t-line"><span class="t-output">  "When I open five tabs every Monday to check metrics, what I actually</span></div>
+<div class="t-line"><span class="t-output">  dread isn't the tabs — it's not knowing what to do with what I find.</span></div>
+<div class="t-line"><span class="t-output">  Will your dashboard tell me what matters, or just show me numbers?"</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        ⚙️ ENGINEER:</span></div>
+<div class="t-line"><span class="t-output">  "PostHog, Stripe, and Linear each have different auth models and rate</span></div>
+<div class="t-line"><span class="t-output">  limits. Are you building this for one PM's setup, or does it need to</span></div>
+<div class="t-line"><span class="t-output">  work across different API keys for different users?"</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        🎯 ADVISOR:</span></div>
+<div class="t-line"><span class="t-output">  "Datadog, Grafana, and Metabase all do parts of this. What's the</span></div>
+<div class="t-line"><span class="t-output">  insight or workflow you're delivering that those tools don't?"</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> [responds to each question]</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">Claude  ─── Sharpened idea:</span></div>
+<div class="t-line"><span class="t-output">  A single-user PM pulse dashboard that pulls from PostHog, Stripe, and</span></div>
+<div class="t-line"><span class="t-output">  Linear, surfaces anomalies automatically, and tells you what to do</span></div>
+<div class="t-line"><span class="t-output">  next — not just what happened.</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        ─── Biggest risk:</span></div>
+<div class="t-line"><span class="t-output">  API auth complexity. Solve single-user setup first.</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        ─── GO</span><span class="t-success"> ✓</span><span class="t-output"> — narrow scope makes this buildable in a weekend.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROMPT 2: TECH SPEC -->
+<section id="prompt2" class="section fade-in">
+  <div class="section-label">Part 05 · Phase 2</div>
+  <h2>The Tech Spec Prompt</h2>
+  <p>Once your idea is sharp, turn it into a technical blueprint. This prompt takes the sharpened idea from Phase 1 and produces a spec precise enough for Claude Code to build from without constantly asking clarifying questions. Run this in Claude.ai or Claude Code — then save the output as <code style="background:var(--cream);padding:0.1rem 0.4rem;border-radius:3px;font-family:'DM Mono',monospace;font-size:0.85em;">SPEC.md</code> in your project folder.</p>
+
+  <div class="prompt-section">
+    <div class="prompt-header-band">
+      <div class="prompt-phase-badge">📋</div>
+      <div class="prompt-header-text">
+        <div class="prompt-header-phase">Phase 2 of 3 · Tech Spec</div>
+        <div class="prompt-header-title">The Blueprint Generator</div>
+        <div class="prompt-header-sub">Paste in your sharpened idea from Phase 1 — the more specific, the better</div>
+      </div>
+    </div>
+    <div class="prompt-body">
+      <div class="prompt-why">
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">What it does</div>
+          Translates a product idea into a builder-ready spec with a chosen tech stack, clear screens, data model, and explicit out-of-scope constraints. The [ASSUMED] flag forces Claude to surface its assumptions so you can correct them before the build starts.
+        </div>
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">Why save it as SPEC.md</div>
+          When you start the build in Phase 3, you'll tell Claude Code to read SPEC.md. This gives it persistent context for the entire build session — it won't forget what you agreed on, and it won't invent features you didn't ask for.
+        </div>
+      </div>
+      <div class="prompt-code">
+        <div class="code-block-standalone" style="margin:0; border-radius:0;">
+          <div class="code-header">
+            <span class="code-label">Prompt 2 · Tech Spec</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <div class="code-body wrap">Turn the following product idea into a technical spec I can hand to an AI coding agent to build from.
+
+The spec must include:
+
+PRODUCT NAME & ONE-LINE DESCRIPTION
+TECH STACK: Choose the simplest stack that works — prefer HTML/CSS/JS for simple tools, React for interactive dashboards, Python for data/backend tasks. State your choice and why.
+SCREENS / VIEWS: List every screen or page. For each, describe what the user sees and what actions they can take. Be specific.
+DATA MODEL: What data does the app store or display? Where does it come from?
+INTEGRATIONS: Any external APIs or services? List with auth method.
+MVP CONSTRAINTS: What is explicitly OUT of scope for version 1?
+SUCCESS CRITERIA: How do we know the app is working correctly? (2-3 testable statements)
+OPEN QUESTIONS: Flag any decision I need to make before building starts with [NEEDS DECISION].
+
+Flag any assumption you make with [ASSUMED]. Keep each section concise — this spec should fit on 2 pages.
+
+My product idea: <span class="placeholder">[paste your sharpened idea from the brainstorm, or describe it fresh]</span></div>
+        </div>
+      </div>
+      <div class="prompt-response">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
+            <div class="t-label">claude — spec output example (truncated)</div>
+          </div>
+          <div class="terminal-body">
+<div class="t-line"><span class="t-claude">Claude  PRODUCT NAME: PM Pulse Dashboard</span></div>
+<div class="t-line"><span class="t-output">  A single-screen dashboard showing a PM's key weekly metrics</span></div>
+<div class="t-line"><span class="t-output">  with automated anomaly flagging.</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        TECH STACK: React + Vite</span></div>
+<div class="t-line"><span class="t-output">  [ASSUMED] Single-user, no backend needed — API keys stored locally.</span></div>
+<div class="t-line"><span class="t-output">  Recharts for data visualization. Tailwind for styling.</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        SCREENS:</span></div>
+<div class="t-line"><span class="t-output">  1. Dashboard (main) — metric cards, trend sparklines, anomaly flags</span></div>
+<div class="t-line"><span class="t-output">  2. Settings — API key entry for PostHog, Stripe, Linear</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        MVP CONSTRAINTS (out of scope):</span></div>
+<div class="t-line"><span class="t-output">  ✗ Multi-user / team features</span></div>
+<div class="t-line"><span class="t-output">  ✗ Email reports or scheduled exports</span></div>
+<div class="t-line"><span class="t-output">  ✗ Custom metric formulas</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        OPEN QUESTIONS:</span></div>
+<div class="t-line"><span class="t-action">  [NEEDS DECISION]</span><span class="t-output"> What time window for "anomaly"? (vs last week / vs 30-day avg?)</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-output">  ── Save this as SPEC.md in your project folder before Phase 3. ──</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip" style="margin-top:1.5rem;">
+    <div class="callout-label">Save the spec as a file</div>
+    <p>After Claude generates the spec, copy it and save it as <code style="font-family:'DM Mono',monospace;">SPEC.md</code> inside your project folder. In Phase 3, you'll start Claude Code and say "read SPEC.md and build this." That one file becomes the source of truth for the entire build.</p>
+  </div>
+</section>
+
+<!-- PROMPT 3: BUILD -->
+<section id="prompt3" class="section fade-in">
+  <div class="section-label">Part 06 · Phase 3</div>
+  <h2>The Build Prompt</h2>
+  <p>Now you're in Claude Code — the terminal. You have your SPEC.md saved in the project folder. This is the prompt that kicks off the actual build. Claude will read the spec, plan its approach, and start writing files. <strong>This is where you'll be reviewing and accepting changes</strong> — more on that in the next section.</p>
+
+  <div class="prompt-section">
+    <div class="prompt-header-band">
+      <div class="prompt-phase-badge">🏗️</div>
+      <div class="prompt-header-text">
+        <div class="prompt-header-phase">Phase 3 of 3 · Build</div>
+        <div class="prompt-header-title">The Build Kickoff</div>
+        <div class="prompt-header-sub">Run this inside Claude Code, in your project folder, with SPEC.md present</div>
+      </div>
+    </div>
+    <div class="prompt-body">
+      <div class="prompt-why">
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">What it does</div>
+          Tells Claude to read the spec first (so it has full context), plan before it acts (so you can review the plan), build incrementally (so changes are manageable), and check in at logical milestones rather than disappearing for 20 minutes and returning with 50 changed files.
+        </div>
+        <div class="prompt-why-cell">
+          <div class="prompt-why-label">The "check in" instruction</div>
+          This is critical for beginners. Without it, Claude Code will sometimes build entire features in one sweep. The check-in instruction forces natural pause points where you can redirect, ask questions, or say "actually, skip that part" — without losing control of the build.
+        </div>
+      </div>
+      <div class="prompt-code">
+        <div class="code-block-standalone" style="margin:0; border-radius:0;">
+          <div class="code-header">
+            <span class="code-label">Prompt 3 · Build (run inside Claude Code terminal)</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <div class="code-body wrap">Read SPEC.md first, then build this application.
+
+Before writing any code:
+1. Confirm you've read the spec by summarizing what we're building in 3 bullet points
+2. Tell me the order you'll build things in (e.g., structure first, then UI, then data connections)
+3. Flag any [NEEDS DECISION] items from the spec and wait for my answers
+
+Then build incrementally:
+— Set up the project structure first and show me before proceeding
+— Build one screen or feature at a time
+— After each major piece, show me what it looks like and what works
+— Check in before starting anything that touches external APIs or data
+
+If you're unsure about anything, ask — don't assume and build the wrong thing.
+
+When you're done with each section, tell me: what's working, what's next, and what I should test.</div>
+        </div>
+      </div>
+      <div class="prompt-response">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
+            <div class="t-label">claude code — build session (inside terminal)</div>
+          </div>
+          <div class="terminal-body">
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> [paste the build prompt above]</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">Claude  Read SPEC.md ✓ — Here's what we're building:</span></div>
+<div class="t-line"><span class="t-output">  • Single-page React dashboard pulling PM metrics from 3 APIs</span></div>
+<div class="t-line"><span class="t-output">  • Anomaly detection that flags unusual changes week-over-week</span></div>
+<div class="t-line"><span class="t-output">  • Settings screen for API key storage (local only)</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        Build order:</span></div>
+<div class="t-line"><span class="t-output">  1. Project scaffold (Vite + React + Tailwind)</span></div>
+<div class="t-line"><span class="t-output">  2. Dashboard shell + metric card components</span></div>
+<div class="t-line"><span class="t-output">  3. Mock data to test UI before real API calls</span></div>
+<div class="t-line"><span class="t-output">  4. Settings screen + local key storage</span></div>
+<div class="t-line"><span class="t-output">  5. Live API integrations (PostHog → Stripe → Linear)</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-action">  [NEEDS DECISION]</span><span class="t-output"> Anomaly baseline: vs last week or vs 30-day average?</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> vs last week is fine, let's go</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">        Creating project structure...</span></div>
+<div class="t-line"><span class="t-action">  Write  src/App.jsx</span></div>
+<div class="t-line"><span class="t-action">  Write  src/components/MetricCard.jsx</span></div>
+<div class="t-line"><span class="t-action">  Write  tailwind.config.js</span></div>
+<div class="t-line"><span class="t-action">  Write  package.json</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-output">  Do you want to accept these 4 file changes? [y/n/review]</span></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> y</span></div>
+<div class="t-line"><span class="t-success">  ✓ Files written. Run `npm install && npm run dev` to see it.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACCEPT CHANGES -->
+<section id="accept" class="section fade-in">
+  <div class="section-label">Part 07 · Staying in Control</div>
+  <h2>When to accept changes</h2>
+  <p>This is the part that trips up new users most. Claude Code <strong>always asks before changing your files</strong> — it shows you what it wants to do and waits for your approval. Here's the mental model for what to approve and what to push back on.</p>
+
+  <div class="callout callout-key" style="margin-top:0;">
+    <div class="callout-label">The golden rule</div>
+    <p><strong>Read before you accept.</strong> Claude Code will show you exactly what files it's creating or changing. You don't need to understand every line — but you should know <em>what</em> it's building and <em>why.</em> If something surprises you, ask before accepting.</p>
+  </div>
+
+  <div class="decision-grid">
+    <div class="decision-col">
+      <h3>⏸ Pause and read first</h3>
+      <div class="decision-item">
+        <div class="d-icon">🔴</div>
+        <div>It's changing a file that already exists and has content — especially config files like <code style="font-family:'DM Mono',monospace;font-size:0.85em;">package.json</code>, <code style="font-family:'DM Mono',monospace;font-size:0.85em;">.env</code>, or any file you didn't know about</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">🔴</div>
+        <div>It's about to run a terminal command (install packages, start a server, delete files) — read the command carefully before saying yes</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">🔴</div>
+        <div>It mentions touching an API with real credentials — make sure it's using test/sandbox mode first</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">🟡</div>
+        <div>The list of changed files is long (10+) — ask Claude to explain what each section does before accepting the whole batch</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">🟡</div>
+        <div>Something in the plan changed from what you discussed — ask "wait, why are you doing X?" before proceeding</div>
+      </div>
+    </div>
+    <div class="decision-col">
+      <h3>✅ Safe to accept</h3>
+      <div class="decision-item">
+        <div class="d-icon">✅</div>
+        <div>New files being created from scratch in a project you just started — these don't overwrite anything</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">✅</div>
+        <div>UI/styling changes to components that Claude just created in this same session — low risk, easy to undo</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">✅</div>
+        <div>Installing standard packages (React, Tailwind, Recharts) — these are well-known libraries you've seen in the spec</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">✅</div>
+        <div>Changes that match exactly what Claude told you it was going to do in its plan — no surprises means low risk</div>
+      </div>
+      <div class="decision-item">
+        <div class="d-icon">✅</div>
+        <div>Adding test data or placeholder content — this is how Claude proves the UI works before wiring up real data</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 2.5rem;">The accept/reject workflow in practice</h3>
+
+  <div class="terminal" style="margin-top:1.25rem;">
+    <div class="terminal-bar">
+      <div class="t-dot red"></div><div class="t-dot yellow"></div><div class="t-dot green"></div>
+      <div class="t-label">claude code — reviewing changes</div>
+    </div>
+    <div class="terminal-body">
+<div class="t-line"><span class="t-claude">Claude  I'll create the MetricCard component now.</span></div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-action">  Write  src/components/MetricCard.jsx</span><span class="t-output">  (new file, 48 lines)</span></div>
+<div class="t-action">  Accept? [y]es / [n]o / [v]iew / [e]dit suggestion</div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> v</span><span class="t-output">  ← view first</span></div>
+<div class="t-line"><span class="t-output">  [shows the full file contents]</span></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> y</span><span class="t-output">  ← looks good, accept</span></div>
+<div class="t-success">  ✓ Written</div>
+<div class="t-gap"></div>
+<div class="t-line"><span class="t-claude">Claude  Now I'll update App.jsx to import MetricCard.</span></div>
+<div class="t-action">  Edit   src/App.jsx</div>
+<div class="t-line"><span class="t-output">  Accept?</span></div>
+<div class="t-line"><span class="t-prompt">you&gt;</span><span class="t-input"> wait — why are you changing App.jsx already? I thought we were doing the shell first.</span></div>
+<div class="t-line"><span class="t-claude">        You're right — I'm getting ahead. Let me finish the shell first,</span></div>
+<div class="t-line"><span class="t-output">  then wire in MetricCard once the layout is confirmed.</span></div>
+<div class="t-gap"></div>
+<div class="t-output">  ← This is the right workflow. Ask whenever something doesn't match the plan.</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 2rem;">Your safety net: git</h3>
+  <p>Claude Code works best when you're using git — a tool that tracks every version of your files. If you accept a change and it breaks something, you can always roll back. Claude Code will often initialize git automatically; if it doesn't, type <code style="background:var(--cream);padding:0.1rem 0.4rem;border-radius:3px;font-family:'DM Mono',monospace;font-size:0.85em;">git init</code> at the start of any project.</p>
+
+  <div class="code-block-standalone">
+    <div class="code-header">
+      <span class="code-label">Your safety commands</span>
+    </div>
+    <div class="code-body"><span class="c-comment"># Save current state (do this after any working milestone)</span>
+<span class="c-cmd">git add .</span>
+<span class="c-cmd">git commit -m "working dashboard shell"</span>
+
+<span class="c-comment"># If something breaks and you want to undo the last changes</span>
+<span class="c-cmd">git diff</span>          <span class="c-comment"># see what changed</span>
+<span class="c-cmd">git restore .</span>     <span class="c-comment"># undo all uncommitted changes (back to last save)</span>
+
+<span class="c-comment"># Ask Claude to explain any command before running it</span>
+<span class="c-green">you&gt;</span> what does this command do before I run it?</div>
+  </div>
+
+  <!-- QUICK REF CHECKLIST -->
+  <h3 style="margin-top:2rem;">First session checklist</h3>
+  <ul class="check-list" id="session-checklist">
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>Phase 1 complete — idea is sharp, biggest risk identified</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>SPEC.md saved in project folder with all sections filled in</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>All [NEEDS DECISION] items resolved before build starts</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>Claude confirmed it read the spec before writing any code</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>First git commit made after project scaffold is created</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>UI visible with mock data before any real API connections</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>Reviewed at least one change with [v]iew before accepting</span></li>
+    <li><div class="cb" onclick="toggleCB(this)"></div><span>Something is working — celebrate, then iterate</span></li>
+  </ul>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div class="cta-inner">
+    <h2>Three prompts. One working product.</h2>
+    <p>The fastest way to learn Claude Code is to build something you actually want. Pick your smallest useful idea — a personal dashboard, a tool that saves you 30 minutes a week, a prototype for your next pitch — and run the three prompts.</p>
+    <a href="https://claude.ai/download" class="cta-btn" target="_blank">Download Claude Code →</a>
+    <a href="pm-claude-guide.html" class="cta-btn secondary">← Back to PM Field Guide</a>
+  </div>
+</div>
+
+<footer>
+  <p>Part of the PM × Claude course series. Install info sourced from <a href="https://code.claude.com/docs/en/quickstart" style="color:var(--teal-light);">code.claude.com/docs</a> — check for the latest instructions as Claude Code updates frequently.</p>
+  <p style="margin-top:0.5rem;"><a href="pm-claude-guide.html" style="color:var(--amber);">← PM Field Guide: Working with Claude</a></p>
+</footer>
+
+<script>
+  // Progress
+  window.addEventListener('scroll', () => {
+    const p = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('progress-bar').style.width = p + '%';
+  });
+
+  // Fade in
+  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  // OS tabs
+  function switchOS(btn, panelId) {
+    btn.closest('.os-tabs').querySelectorAll('.os-btn').forEach(b => b.classList.remove('active'));
+    btn.closest('.os-tabs').querySelectorAll('.os-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  // Copy
+  function copyCode(btn) {
+    const body = btn.closest('.code-block, .code-block-standalone').querySelector('.code-body');
+    navigator.clipboard.writeText(body.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // Checkboxes
+  function toggleCB(box) {
+    box.classList.toggle('checked');
+    box.innerHTML = box.classList.contains('checked') ? '✓' : '';
+    box.closest('li').classList.toggle('done', box.classList.contains('checked'));
+  }
+</script>
+</body>
+</html>
